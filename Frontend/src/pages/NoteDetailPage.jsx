@@ -18,7 +18,8 @@ const NoteDetailPage = () => {
     const fetchNote = async() => {
       try {
         const res = await api.get(`/notes/${id}`);
-        setNote(res.data)
+        console.log(res.data);
+        setNote(res.data.note);
       } catch (error) {
         console.log("Error in fetching notes",error)
         toast.error("Failed to fetch the notes")
@@ -43,6 +44,25 @@ const NoteDetailPage = () => {
     }
   };
 
+  //Pin Note function
+  const handlePin = async () => {
+  try {
+    console.log(note.isPinned);
+    await api.put(`/notes/${id}`, {
+      isPinned: !note.isPinned, //basically toggling
+    });
+
+    toast.success(
+      note.isPinned ? "Note unpinned" : "Note pinned"
+    );
+
+    navigate("/");
+
+  } catch (error) {
+    console.log("Error pinning note:", error);
+    toast.error("Failed to update pin");
+  }
+};
   const handleSave = async () => {
     if(!note.title.trim() || !note.content.trim()){
       toast.error("Please add a title or content");
@@ -61,7 +81,6 @@ const NoteDetailPage = () => {
       setSaving(false);
     }
   };
-
   if(loading){
     return(
       <div className="min-h-screen bg-base-200 flex items-center justify-center">
@@ -70,56 +89,89 @@ const NoteDetailPage = () => {
     );
   }
   return (
-    <div className="min-h-screen bg-base-200">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-        <div className= "flex items-center justify-between mb-6">
+  <div className="min-h-screen bg-base-200">
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+
+        {/* Top Buttons */}
+        <div className="flex items-center justify-between mb-6">
           <Link to="/" className="btn btn-ghost">
-            <ArrowLeftIcon className="h-5 w-5"/>
+            <ArrowLeftIcon className="h-5 w-5" />
             Back to Notes
           </Link>
-          <button onClick={handleDelete} className="btn btn-error btn-outline">
-            <Trash2Icon className="h-5 w-5"/>
-            Delete Note
-          </button>
-          </div>
-            <div className="form-control mb-4">
-                <label className="label">
-                  <span className="label-text">Content</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Note Title"
-                  className="input input-bordered"
-                  value={note.title}
-                  onChange={(e) => setNote({ ...note, title: e.target.value })}
-                />
-              </div>
-            <div className="form-control mb-4">
-                <label className="label">
-                  <span className="label-text">Content</span>
-                </label>
-                <textarea
-                  placeholder="Write your note here..."
-                  className="textarea textarea-bordered h-32"
-                  value={note.content}
-                  onChange={(e) => setNote({ ...note, content: e.target.value })}
-                />
-              </div>
-            <div className="card-actions justify-end">
-              <button className = "btn btn-primary" disabled={saving} onClick={(handleSave)}>
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
-          <div className="card bg-base-100">
-            <div className="card-body">
 
-            </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handlePin}
+              className="btn btn-outline"
+            >
+              {note.isPinned ? "📌 Unpin" : "📌 Pin"}
+            </button>
+
+            <button
+              onClick={handleDelete}
+              className="btn btn-error btn-outline"
+            >
+              <Trash2Icon className="h-5 w-5" />
+              Delete Note
+            </button>
           </div>
         </div>
+
+        {/* Title */}
+        <div className="form-control mb-4">
+          <label className="label">
+            <span className="label-text">Title</span>
+          </label>
+
+          <input
+            type="text"
+            placeholder="Note Title"
+            className="input input-bordered"
+            value={note.title}
+            onChange={(e) =>
+              setNote({ ...note, title: e.target.value })
+            }
+          />
+        </div>
+
+        {/* Content */}
+        <div className="form-control mb-4">
+          <label className="label">
+            <span className="label-text">Content</span>
+          </label>
+
+          <textarea
+            placeholder="Write your note here..."
+            className="textarea textarea-bordered h-32"
+            value={note.content}
+            onChange={(e) =>
+              setNote({ ...note, content: e.target.value })
+            }
+          />
+        </div>
+
+        {/* Save Button */}
+        <div className="card-actions justify-end mb-4">
+          <button
+            className="btn btn-primary"
+            disabled={saving}
+            onClick={handleSave}
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+
+        {/* Empty card (same as before) */}
+        <div className="card bg-base-100">
+          <div className="card-body">
+          </div>
+        </div>
+
       </div>
     </div>
-  )
+  </div>
+);
 }
 
 export default NoteDetailPage

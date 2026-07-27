@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 
-import notesRoutes from "./routes/notesRoutes.js"
+import tasksRoutes from "./routes/tasksRoutes.js"
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js"
 dotenv.config();
@@ -19,6 +19,7 @@ if(process.env.NODE_ENV !== "production"){
   app.use(
     cors({
       origin: "http://52.91.141.40",
+      origin: "http://localhost:5173",
     })
   );
 } 
@@ -30,7 +31,7 @@ app.use((req,res,next) =>{
   console.log(`The req method is ${req.method} and the req URL is ${req.url}`);
   next();
 });
-app.use("/api/notes", notesRoutes);
+app.use("/api/notes", tasksRoutes);
 
 if(process.env.NODE_ENV === "production"){
   app.use(express.static(path.join(__dirname,"../Frontend/dist")));

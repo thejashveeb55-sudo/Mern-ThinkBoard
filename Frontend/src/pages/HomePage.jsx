@@ -14,11 +14,19 @@ const HomePage = () => {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  //implementing sorting logic and storing in new copy
+  const sortedNotes = [...notes].sort((a, b) => {
+  if (a.isPinned && !b.isPinned) return -1;
+
+  if (!a.isPinned && b.isPinned) return 1;
+
+  return 0;
+});
+  useEffect(() => { 
     const fetchNotes = async () => {
       try{
         const res = await api.get("/notes");
-        console.log("API returned",res.data);
+        console.log("Fetched note:",res.data);
         setNotes(res.data);
         setIsRateLimited(false);
       } catch(error){
@@ -48,7 +56,7 @@ const HomePage = () => {
         {notes.length > 0 && !isRateLimited &&(
 
           <div className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {notes.map((note) =>(
+            {sortedNotes.map((note) =>(
               <NoteCard key={note._id} note={note} setNotes={setNotes}/>
             ))}
             </div>
