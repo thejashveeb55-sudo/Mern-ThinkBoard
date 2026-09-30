@@ -3,7 +3,7 @@ import { getEmbedding } from "./embeddingService.js";
 
 // Pure math: cosine similarity between two equal-length vectors.
 // O(d) where d = vector dimensionality (384 here) — not O(1), as we worked out.
-function cosineSimilarity(a, b) {
+function cosineSimilarity(a, b) { 
   let dot = 0;
   let magA = 0;
   let magB = 0;
@@ -27,6 +27,7 @@ export async function semanticSearch(queryText, { statusFilter, topK = 5 } = {})
 
   const mongoFilter = { task_embedding_status: "completed" };
   if (statusFilter) mongoFilter.status = statusFilter;
+  if (teamIds) mongoFilter.teamId = { $in: teamIds };
 
   const tasks = await Task.find(mongoFilter);
 

@@ -4,7 +4,7 @@ const commentSchema = new mongoose.Schema(
   {
     author: { type: String, required: true },
     text: { type: String, required: true },
-    comment_embedding: { type: [Number], default: undefined }, // array of 384 floats
+    comment_embedding: { type: [Number], default: undefined },
     comment_embedding_status: {
       type: String,
       enum: ["pending", "completed", "failed"],
@@ -16,6 +16,7 @@ const commentSchema = new mongoose.Schema(
 
 const taskSchema = new mongoose.Schema(
   {
+    teamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
     title: { type: String, required: true },
     content: { type: String, required: true },
     status: {

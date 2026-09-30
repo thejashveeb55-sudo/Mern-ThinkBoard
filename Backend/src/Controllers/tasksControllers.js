@@ -1,7 +1,27 @@
 import Task from "../models/Task.js";
 import { getEmbedding } from "../services/embeddingService.js";
+import { semanticSearch} from "../services/searchService.js";
+import {getTeamScopedResults } from "../services/teamScopedResults.js";
+import { answerQuestion } from "../services/ragService.js";
+import { runAgentLoop } from "../services/agentLoop.js";
+import { getTeamScopedResults } from "../services/teamScopedResults.js";
 
 // --- Embedding generation helpers (fire-and-forget, never awaited by callers) ---
+
+export async function agentChat(req, res) {
+  try {
+    const { message } = req.body;
+    if (!message || !message.trim()) {
+      return res.status(400).json({ message: "'message' is required" });
+    }
+
+    const reply = await runAgentLoop(message, req.userId);
+    res.status(200).json({ reply });
+  } catch (error) {
+    console.error("Error in agentChat controller", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
 
 async function generateTaskEmbedding(taskId, title, content) {
   try {
@@ -80,8 +100,8 @@ export async function deleteTask(req, res) {
 
 export async function createTask(req, res) {
   try {
-    const { title, content, status, tags } = req.body;
-    const newTask = new Task({ title, content, status, tags });
+    const { teamId, title, content, status, tags } = req.body;
+    const newTask = new Task({ teamId, title, content, status, tags });
     const savedTask = await newTask.save();
 
     // Fire-and-forget: NOT awaited, so this doesn't block the response.
@@ -128,6 +148,36 @@ export async function updateTask(req, res) {
     res.status(200).json(updatedTask);
   } catch (error) {
     console.error("Error in updateTask controller", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function searchTasks(req, res) {
+  try {
+    const { q, status } = req.query;
+    if (!q || !q.trim()) {
+      return res.status(400).json({ message: "Query param 'q' is required" });
+    }
+
+    const results = await getTeamScopedResults(q,req.userId,{statusFiler : status});
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Error in searchTasks controller", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function askAI(req, res) {
+  try {
+    const {q} = req.query;
+    if (!q || !q.trim()) {
+      return res.status(400).json({ message: "Query param 'q' is required" });
+    }
+    const user_id = req.userId;
+    const results = await answerQuestion(q, user_id);
+    res.status(200).json({results});
+  } catch (error) {
+    console.error("Error in askAI controller", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }

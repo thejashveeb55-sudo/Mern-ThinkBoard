@@ -5,8 +5,11 @@ import cors from "cors";
 import path from "path";
 
 import tasksRoutes from "./routes/tasksRoutes.js"
+import teamRoutes from "./routes/teamRoutes.js"
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js"
+import cookieParser from "cookie-parser";
+import authRoutes from "./routes/authRoutes.js";
 dotenv.config();
 
 //console.log(process.env.MONGO_URI);
@@ -26,12 +29,18 @@ if(process.env.NODE_ENV !== "production"){
 app.use(express.json()); //gives access to req body
 app.use(rateLimiter);
 
+//auth middleware
+app.use(cookieParser());
+app.use("/api/auth", authRoutes);
+
 //custom middleware fn
 app.use((req,res,next) =>{
   console.log(`The req method is ${req.method} and the req URL is ${req.url}`);
   next();
 });
 app.use("/api/notes", tasksRoutes);
+//RBAC
+app.use("/api/teams", teamRoutes);
 
 if(process.env.NODE_ENV === "production"){
   app.use(express.static(path.join(__dirname,"../Frontend/dist")));
